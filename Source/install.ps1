@@ -11,6 +11,9 @@ if ($env:PROCESSOR_ARCHITEW6432 -eq "AMD64") {
 
 Start-Transcript -Path "$($env:TEMP)\IntuneSignatureManagerForOutlook-log.txt" -Force
 
+# Install NuGet Package Provider
+Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Scope CurrentUser -Force
+
 # Install AzureAD module to retrieve the user information
 Install-Module -Name AzureAD -Scope CurrentUser -Force
 
