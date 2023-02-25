@@ -9,13 +9,24 @@ if ($env:PROCESSOR_ARCHITEW6432 -eq "AMD64") {
     exit
 }
 
+# Starting transcript
 Start-Transcript -Path "$($env:TEMP)\IntuneSignatureManagerForOutlook-log.txt" -Force
 
-# Install NuGet Package Provider
-Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Scope CurrentUser -Force
+# Install NuGet Package Provider if it isn't installed
+if ($NULL -eq (Get-PackageProvider -ListAvailable | Where-Object Name -eq NuGet)) {
+    try {
+        Install-PackageProvider -Name NuGet -Confirm:$False -Force -Scope CurrentUser
+    }
+    catch [Exception]{
+        $_.message 
+        exit
+    }
+}
 
-# Install AzureAD module to retrieve the user information
-Install-Module -Name AzureAD -Scope CurrentUser -Force
+# Install AzureAD module to retrieve the user information if it doesn't exist
+if (-not(Get-Module -ListAvailable -Name AzureAd)){
+    Install-Module -Name AzureAD -Scope CurrentUser -Force
+}
 
 # Leverage Single Sign-on to sign into the AzureAD PowerShell module
 $userPrincipalName = whoami -upn
@@ -24,7 +35,7 @@ Connect-AzureAD -AccountId $userPrincipalName
 # Get the user information to update the signature
 $userObject = Get-AzureADUser -ObjectId $userPrincipalName
 
-# Create signatures folder if not exists
+# Create signatures folder if it does not exist yet
 if (-not (Test-Path "$($env:APPDATA)\Microsoft\Signatures")) {
     $null = New-Item -Path "$($env:APPDATA)\Microsoft\Signatures" -ItemType Directory
 }
@@ -61,4 +72,8 @@ foreach ($signatureFile in $signatureFiles) {
     }
 }
 
+# Disconnecting Azure AD to not keep the session open for longer then required.
+Disconnect-AzureAD
+
+# Stopping transript
 Stop-Transcript
