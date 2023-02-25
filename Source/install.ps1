@@ -12,7 +12,7 @@ if ($env:PROCESSOR_ARCHITEW6432 -eq "AMD64") {
 # Starting transcript
 Start-Transcript -Path "$($env:TEMP)\IntuneSignatureManagerForOutlook-log.txt" -Force
 
-# Install NuGet Package Provider if it isn't installed
+# Install NuGet Package Provider if it isn't installed yet
 if ($NULL -eq (Get-PackageProvider -ListAvailable | Where-Object Name -eq NuGet)) {
     try {
         Install-PackageProvider -Name NuGet -Confirm:$False -Force -Scope CurrentUser
@@ -23,7 +23,7 @@ if ($NULL -eq (Get-PackageProvider -ListAvailable | Where-Object Name -eq NuGet)
     }
 }
 
-# Install AzureAD module to retrieve the user information if it doesn't exist
+# Install AzureAD module to retrieve the user information if it is not installed yet
 if (-not(Get-Module -ListAvailable -Name AzureAd)){
     Install-Module -Name AzureAD -Scope CurrentUser -Force
 }
